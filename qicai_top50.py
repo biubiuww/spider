@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
-# author: Jason
-# date: 2018年09月30日
+# date: 2018年10月15日
 
 import requests
 from bs4 import BeautifulSoup
@@ -10,7 +9,6 @@ from  multiprocessing import Pool
 
 headers = {
     'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
-    'Cookie': 'bdshare_firstime=1539431483206',
     'Host': 'www.qcenglish.com',
     'Referer': 'http://www.qcenglish.com/'
 }
@@ -53,12 +51,6 @@ def get_list(url):
     clear_list = [x for x in top_list if not p.findall(x)]
     return clear_list
 
-#
-# def main():
-#     top_list = get_list(url)
-#     for article_url in top_list:
-#         start_url = host + article_url
-#         get_article(start_url)
 
 if __name__ == '__main__':
     p = Pool()
@@ -70,4 +62,5 @@ if __name__ == '__main__':
     p.close()
     p.join()
     if start.successful():
-        print('Top50 下载完成！\n')
+        print('emmmm....not good!')
+    print('Top50 下载完成！\n')
