@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import urllib.request
 import re
 from  multiprocessing import Pool
+import random, time
 
 headers = {
     'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
@@ -37,6 +38,9 @@ def download(url, title):
     file_path = download_path + title + '.zip'
     urllib.request.urlretrieve(url, file_path)
     print('下载完成.......\n')
+    print('延迟等待....Hold on!')
+    time.sleep(random(3,10))
+
 
 def get_list(url):
     top_list = []
@@ -62,5 +66,4 @@ if __name__ == '__main__':
     p.close()
     p.join()
     if start.successful():
-        print('emmmm....not good!')
-    print('Top50 下载完成！\n')
+        print('Top50 下载完成！\n')

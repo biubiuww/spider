@@ -11,7 +11,3 @@
 * Windows7 64位
 * Python3.5
 
-
-
-
-
