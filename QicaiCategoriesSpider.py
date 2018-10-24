@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import urllib.request
 import pymongo
-import time,random
+import time
 from multiprocessing import Pool
 
 mongo_client = pymongo.MongoClient('localhost',27017)
@@ -53,66 +53,74 @@ def get_article(url):
 
 def download(url, title):
     file_path = download_path + title + '.zip'
-    urllib.request.urlretrieve(url, file_path)
-    print('下载完成.......\n')
-    print('延迟等待...')
-    time.sleep(5)
+    conunter = 1
+    try:
+        urllib.request.urlretrieve(url, file_path)
+    except urllib.error.URLError as e:
+        while conunter <= 3:
+            print("尝试重连，当前次数：" + str(conunter))
+            download(url,title)
+            conunter += 1
+        pass
+    print('下载完成.......')
+    # print('延迟等待...\n')
+    # time.sleep(3)
 
-def url_generator():
-    for x in range(1,12):
-        url = 'http://www.qcenglish.com/ebook/list_17_{}.html'.format(str(x))
+def url_generator(page_id,page_sum):
+    page_sum = page_sum + 1
+    for y in range(1,page_sum):
+        url = 'http://www.qcenglish.com/ebook/list_' +  str(page_id)  + '_{}.html'.format(str(y))
         get_item_url(url)
         print('文章页获取ing....')
         time.sleep(3)
 
 
-def run():
+# def run():
+#     for item in qcdb.url.find():
+#         item_status = item.get('status')
+#         item_url = item.get('item_url')
+#         if item_status == 0:
+#             print('当前内容页：' + item_url)
+#             try:
+#                 get_article(item_url)
+#                 qcdb.url.update({'item_url':item_url},{"$set":{"item_url":item_url,"status":1}},multi=False)
+#             except:
+#                 print('发现一个玄学问题!')
+#                 bad_url = {
+#                     'badURL': item_url,
+#                     'status': 0
+#                 }
+#                 qcdb.badurl.insert(bad_url)
+#                 print('已加入BadURL中，请注意查看！')
+#                 pass
+#         else:
+#             print('已经爬取过了····')
+
+# url_generator(15,88)
+
+
+if __name__ == '__main__':
+    p = Pool()
     for item in qcdb.url.find():
         item_status = item.get('status')
         item_url = item.get('item_url')
-        flag = 1
         if item_status == 0:
             print('当前内容页：' + item_url)
             try:
-                get_article(item_url)
+                p.apply_async(get_article(item_url))
                 qcdb.url.update({'item_url':item_url},{"$set":{"item_url":item_url,"status":1}},multi=False)
-                print('下载完成！')
-            except TimeoutError as e:
-                print('连接超时，错误代码：' + e)
-                if flag <= 3:
-                    print('尝试重连，当前次数：' + flag)
-                    get_article(item_url)
-                    flag += 1
-                else:
-                    bad_url = {
-                        'badURL': item_url,
-                        'status': 0
-                    }
-                    qcdb.badurl.insert(bad_url)
-                    print('重连失败！已加入BadURL中，请注意查看！')
-                    pass
+            except:
+                print('发现一个玄学问题!')
+                bad_url = {
+                    'badURL': item_url,
+                    'status': 0
+                }
+                qcdb.badurl.insert(bad_url)
+                print('已加入BadURL中，请注意查看！')
+                pass
         else:
             print('已经爬取过了····')
-
-# item_urls = qcdb.url.find()
-# for item_url in item_urls:
-#     flag = 1
-#     item_url = item_url.get('item_url')
-#     print('当前URL为：' + item_url)
-#     try:
-#         get_article(item_url)
-#     except TimeoutError as e:
-#         print(e)
-#         if flag <= 3:
-#             print('尝试重连，第' + str(flag) + '次！')
-#             get_article(item_url)
-#             flag += 1
-#             time.sleep(10)
-#         else:
-#             print('重连失败，跳过此链接！')
-#             bad_url ={
-#                 'bad_url':item_url
-#             }
-#             qcdb.url.insert(bad_url)
-#             print('失败连接已存入数据库中，请注意查看！')
-#             pass
+    print("等待新的线程加入！")
+    p.close()
+    p.join()
+    print('完成！\n')
