@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 import urllib.request
 import pymongo
-import time
 from multiprocessing import Pool
 
 mongo_client = pymongo.MongoClient('localhost',27017)
@@ -10,31 +9,15 @@ db = mongo_client['spider_db']
 qcdb = db.client['qcdb']
 
 
+host = 'http://www.qcenglish.com'
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
     'Host': 'www.qcenglish.com',
-    'Referer': 'http://www.qcenglish.com'
+    'Referer': host
 }
 
-host = 'http://www.qcenglish.com'
 download_path = './tmp//'
-
-def get_item_url(url):
-    print('当前URL： ' + url)
-    wb_date = requests.get(url,headers=headers)
-    wb_date.encoding = wb_date.apparent_encoding
-    soup = BeautifulSoup(wb_date.text,'lxml')
-    items = soup.select('#container > div.content > dl.listitem > a')
-    for item in items:
-        # item = item.get('href')
-        data = {
-            'item_url': host + item.get('href'),
-            'status': 0
-        }
-        print(data)
-        qcdb.url.insert(data)
-    print('当前列表页爬取完成！\n')
 
 def get_article(url):
     req = requests.get(url,headers=headers)
@@ -63,8 +46,22 @@ def download(url, title):
             conunter += 1
         pass
     print('下载完成.......')
-    # print('延迟等待...\n')
-    # time.sleep(3)
+
+def get_item_url(url):
+    print('当前URL： ' + url)
+    wb_date = requests.get(url,headers=headers)
+    wb_date.encoding = wb_date.apparent_encoding
+    soup = BeautifulSoup(wb_date.text,'lxml')
+    items = soup.select('#container > div.content > dl.listitem > a')
+    for item in items:
+        # item = item.get('href')
+        data = {
+            'item_url': host + item.get('href'),
+            'status': 0
+        }
+        print(data)
+        qcdb.url.insert(data)
+    print('当前列表页爬取完成！\n')
 
 def url_generator(page_id,page_sum):
     page_sum = page_sum + 1
@@ -72,31 +69,9 @@ def url_generator(page_id,page_sum):
         url = 'http://www.qcenglish.com/ebook/list_' +  str(page_id)  + '_{}.html'.format(str(y))
         get_item_url(url)
         print('文章页获取ing....')
-        time.sleep(3)
 
 
-# def run():
-#     for item in qcdb.url.find():
-#         item_status = item.get('status')
-#         item_url = item.get('item_url')
-#         if item_status == 0:
-#             print('当前内容页：' + item_url)
-#             try:
-#                 get_article(item_url)
-#                 qcdb.url.update({'item_url':item_url},{"$set":{"item_url":item_url,"status":1}},multi=False)
-#             except:
-#                 print('发现一个玄学问题!')
-#                 bad_url = {
-#                     'badURL': item_url,
-#                     'status': 0
-#                 }
-#                 qcdb.badurl.insert(bad_url)
-#                 print('已加入BadURL中，请注意查看！')
-#                 pass
-#         else:
-#             print('已经爬取过了····')
-
-# url_generator(15,88)
+# url_generator(54,12)
 
 
 if __name__ == '__main__':
