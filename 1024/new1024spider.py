@@ -1,6 +1,7 @@
 import requests
 import os
 import threading
+import random, time
 from bs4 import BeautifulSoup
 
 host = 'https://hh.flexui.win/'
@@ -22,18 +23,30 @@ class myThred(threading.Thread):
         download_pic(self.url,self.dir,self.filename)
 
 def download_pic(url,dir,filename):
-    req = requests.get(url, headers=headers)
-    if req.status_code == 200:
-        with open(str(dir) + '/' + str(filename) + '.jpg', 'wb+') as f:
-            f.write(req.content)
-            # print('下载完成.......' + str(filename))
-    else:
-        print("发生错误，跳过下载....." + str(req.status_code))
+    try:
+        req = requests.get(url, headers=headers)
+        if req.status_code == 200:
+            with open(str(dir) + '/' + str(filename) + '.jpg', 'wb+') as f:
+                f.write(req.content)
+                # print('下载完成.......' + str(filename))
+        else:
+            print("发生错误，跳过下载....." + str(req.status_code))
+    except TimeoutError as e:
+        print("链接超时: " + str(e))
+
+def open_url(url):
+    try:
+        req = requests.get(url,headers=headers)
+        req.encoding = req.apparent_encoding
+        return req
+    except (TimeoutError,ConnectionError,requests.exceptions.ConnectionError) as e:
+        print('链接超时' + str(e))
 
 def get_page(url):
     url_list = []
-    html = requests.get(url,headers=headers)
-    html.encoding = html.apparent_encoding
+    # html = requests.get(url,headers=headers)
+    # html.encoding = html.apparent_encoding
+    html = open_url(url)
     soup = BeautifulSoup(html.text,'lxml')
     article_url = soup.select('tbody > tr > td.tal > h3 > a')
     for url in article_url:
@@ -43,8 +56,9 @@ def get_page(url):
 
 def get_article(url):
     img_all =[]
-    html = requests.get(url,headers=headers)
-    html.encoding = html.apparent_encoding
+    # html = requests.get(url,headers=headers)
+    # html.encoding = html.apparent_encoding
+    html = open_url(url)
     soup = BeautifulSoup(html.text,'lxml')
     title = soup.select('td > h4')[0]
     title = title.get_text()
@@ -59,28 +73,19 @@ def get_article(url):
         filename = 1
         threads = []
         for imgurl in img_all:
-            # download_pic(imgurl,title,filename)
-            # filename += 1
-            # req = requests.get(imgurl, headers=headers)
-            # if req.status_code == 200:
-            #     with open(str(title) + '/' + str(filename) + '.jpg', 'wb+') as f:
-            #         f.write(req.content)
-            #         print('下载完成.......' + str(filename))
-            #         filename += 1
-            # else:
-            #     print("发生错误，跳过下载....." + str(req.status_code))
             thread = myThred(imgurl,title,filename)
             thread.start()
             threads.append(thread)
             filename += 1
         for t in threads:
             t.join()
-        print('下载完成......共计：' +str(filename) + ' 张图片.......')
+        timer = random.randint(2,5)
+        print('下载完成............\n' + '休眠 ' + str(timer) + ' 秒......')
+        time.sleep(timer)
     else:
         print("文件夹已存在，跳过下载。")
 i = 1
-while i <= 100:
-# for i in range(1,165):
+while i <= 2:
     page_url = 'https://hh.flexui.win/thread0806.php?fid=16&search=&page=' + str(i)
     try:
         pagelist = get_page(page_url)
@@ -105,6 +110,6 @@ while i <= 100:
                 print('pass')
             else:
                 get_article(url)
-    except:
-        print('发生错误....')
+    except (IndexError,TimeoutError)as e:
+        print('发生错误....跳过下载......' + str(e))
     i += 1
