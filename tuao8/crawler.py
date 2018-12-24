@@ -1,10 +1,21 @@
 # -*- coding:utf-8 -*-
 import requests
 import os
+import time
+import threading
 from bs4 import BeautifulSoup
-from  multiprocessing import Pool
 
 
+class myThred(threading.Thread):
+    def __init__(self,url,dir,filename):
+        threading.Thread.__init__(self)
+        self.ThreadID = filename
+        self.url = url
+        self.dir = dir
+        self.filename = filename
+
+    def run(self):
+        downloadPic(self.url,self.dir,self.filename)
 def getList(url):
     try:
         html = requests.get(url)
@@ -65,34 +76,42 @@ def startUrl(url):
     return categoryUrl
 
 def main(url):
+    imglinks = []
     title = getTitle(url)
     articles = getArticles(url)
     filename = 1
     for imgurl in articles:
         imglink = getImgurl(imgurl)
-        if os.path.exists(title) == False:
-            os.mkdir(title)
-        else:
-            if os.path.exists(str(title) + '/' + str(filename) + '.jpg') == False:
-                downloadPic(imglink, title, filename)
-                print('下载完成....' + str(filename))
-                filename += 1
-            else:
-                print('文件已存在，跳过下载.....' + str(filename))
-                filename += 1
+        time.sleep(3)
+        imglinks.append(imglink)
+        print('获取下载链接ing.......' + str(imglink))
+    print('共计取得： ' +str(len(imglinks)) + '张图片链接')
+    if os.path.exists(title) == False:
+        os.mkdir(title)
+        threads = []
+        for img in imglinks:
+            thread = myThred(img, title, filename)
+            thread.start()
+            threads.append(thread)
+        # downloadPic(imglink, title, filename)
+            print('下载完成....' + str(filename))
+            filename += 1
+        for t in threads:
+            t.join()
+    else:
+        print('文件已存在，跳过下载.....' + str(filename))
 
 url = 'https://www.tuao8.com/'
-# main('https://www.tuao8.com/post/1587.html')
+
 if __name__ == '__main__':
-    pool = Pool()
     try:
         starturls = startUrl(url)
         for starturl in starturls:
             articleurls = getList(starturl)
             for articleurl in articleurls:
                 print(articleurl)
-                pool.map(main(articleurl))
-                pool.close()
-                pool.join()
+                main(articleurl)
+                time.sleep(3)
+                print('图集下载完成，休眠 3S......')
     except Exception as e:
         print(e)
