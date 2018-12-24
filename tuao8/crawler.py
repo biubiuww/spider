@@ -82,7 +82,6 @@ def main(url):
     filename = 1
     for imgurl in articles:
         imglink = getImgurl(imgurl)
-        time.sleep(3)
         imglinks.append(imglink)
         print('获取下载链接ing.......' + str(imglink))
     print('共计取得： ' +str(len(imglinks)) + '张图片链接')
