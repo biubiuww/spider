@@ -26,7 +26,7 @@ def download_pic(url,dir,filename):
     try:
         req = requests.get(url, headers=headers)
         if req.status_code == 200:
-            with open(str(dir) + '/' + str(filename) + '.jpg', 'wb+') as f:
+            with open('pic' + '/' + str(dir) + '/' + str(filename), 'wb+') as f:
                 f.write(req.content)
                 # print('下载完成.......' + str(filename))
         else:
@@ -44,8 +44,6 @@ def open_url(url):
 
 def get_page(url):
     url_list = []
-    # html = requests.get(url,headers=headers)
-    # html.encoding = html.apparent_encoding
     html = open_url(url)
     soup = BeautifulSoup(html.text,'lxml')
     article_url = soup.select('tbody > tr > td.tal > h3 > a')
@@ -56,27 +54,24 @@ def get_page(url):
 
 def get_article(url):
     img_all =[]
-    # html = requests.get(url,headers=headers)
-    # html.encoding = html.apparent_encoding
     html = open_url(url)
     soup = BeautifulSoup(html.text,'lxml')
     title = soup.select('td > h4')[0]
     title = title.get_text()
-    img_urls = soup.select('div.tpc_content.do_not_catch > input')
+    img_urls = soup.select("input[type='image']")
     for img_url in img_urls:
         img_url = img_url.get('data-src')
         img_all.append(img_url)
     img_sum = len(img_all)
     print('当前帖子：\n' + str(title) + '\n共计取到 ' + str(img_sum) + ' 张图片连接......')
     if os.path.exists(title) == False:
-        os.makedirs(title)
-        filename = 1
+        os.makedirs('pic' + '/' + str(title))
         threads = []
         for imgurl in img_all:
-            thread = myThred(imgurl,title,filename)
+            imgname = imgurl.split('/')[-1]
+            thread = myThred(imgurl,title,imgname)
             thread.start()
             threads.append(thread)
-            filename += 1
         for t in threads:
             t.join()
         timer = random.randint(2,5)
@@ -84,32 +79,34 @@ def get_article(url):
         time.sleep(timer)
     else:
         print("文件夹已存在，跳过下载。")
-i = 1
-while i <= 2:
-    page_url = 'https://hh.flexui.win/thread0806.php?fid=16&search=&page=' + str(i)
-    try:
-        pagelist = get_page(page_url)
-        for url in pagelist:
-            if url == 'https://hh.flexui.win/read.php?tid=5877':
-                print("pass")
-            elif url == 'https://hh.flexui.win/htm_data/16/1106/524942.html':
-                print('pass')
-            elif url == 'https://hh.flexui.win/htm_data/16/1808/344501.html':
-                print('pass')
-            elif url == 'https://hh.flexui.win/htm_data/16/1110/622028.html':
-                print('pass')
-            elif url == 'https://hh.flexui.win/htm_data/16/1706/2424348.html':
-                print('pass')
-            elif url == 'https://hh.flexui.win/htm_data/16/1707/2519480.html':
-                print('pass')
-            elif url == 'https://hh.flexui.win/htm_data/16/0805/136474.html':
-                print('pass')
-            elif url == 'https://hh.flexui.win/htm_data/16/1109/594741.html':
-                print('pass')
-            elif url == 'https://hh.flexui.win/htm_data/16/1812/3351645.html':
-                print('pass')
-            else:
-                get_article(url)
-    except (IndexError,TimeoutError)as e:
-        print('发生错误....跳过下载......' + str(e))
-    i += 1
+
+if __name__ == '__main__':
+    offset = 1
+    while offset <= 2:
+        page_url = 'https://hh.flexui.win/thread0806.php?fid=16&search=&page=' + str(offset)
+        try:
+            pagelist = get_page(page_url)
+            for url in pagelist:
+                if url == 'https://hh.flexui.win/read.php?tid=5877':
+                    print("pass")
+                elif url == 'https://hh.flexui.win/htm_data/16/1106/524942.html':
+                    print('pass')
+                elif url == 'https://hh.flexui.win/htm_data/16/1808/344501.html':
+                    print('pass')
+                elif url == 'https://hh.flexui.win/htm_data/16/1110/622028.html':
+                    print('pass')
+                elif url == 'https://hh.flexui.win/htm_data/16/1706/2424348.html':
+                    print('pass')
+                elif url == 'https://hh.flexui.win/htm_data/16/1707/2519480.html':
+                    print('pass')
+                elif url == 'https://hh.flexui.win/htm_data/16/0805/136474.html':
+                    print('pass')
+                elif url == 'https://hh.flexui.win/htm_data/16/1109/594741.html':
+                    print('pass')
+                elif url == 'https://hh.flexui.win/htm_data/16/1812/3351645.html':
+                    print('pass')
+                else:
+                    get_article(url)
+        except Exception as e:
+            print('发生错误....跳过下载......' + str(e))
+        offset += 1
