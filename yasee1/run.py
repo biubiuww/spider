@@ -1,6 +1,6 @@
 import requests
 
-host = 'https://'
+host = 'https:///'
 
 def getVideoId():
     videoId = int(input("Input Video ID: "))
@@ -79,5 +79,5 @@ if __name__ == '__main__':
         if XHR == None:
             print('Error!\n')
         else:
-            m3u8 = m3u8(data=XHR)
-            print(m3u8)
+            m3u8_url = m3u8(XHR)
+            print(m3u8_url)
