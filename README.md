@@ -1,6 +1,20 @@
-## python_spider
+## Python Crawler
 
-- 自用 勿喷 
-- 基于python3
+
+A crawler.
+
+Base on Python3.x.
+
+## Dependencies
+
+- Python3.x
+- MongoDB
+
+
+
+## About
+
+
+
 
 

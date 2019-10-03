@@ -112,5 +112,6 @@ if __name__ == '__main__':
                 main(articleurl)
                 time.sleep(3)
                 print('图集下载完成，休眠 3S......')
+        print('当前分类爬取完成.....')
     except Exception as e:
         print(e)
