@@ -1,6 +1,8 @@
+import os
+import sys
 import requests
 
-host = 'https:///'
+host = 'https://1.yasee1.com/'
 
 def getVideoId():
     videoId = int(input("Input Video ID: "))
@@ -72,6 +74,28 @@ def m3u8(data):
         else:
             video_hls = None
     return video_hls
+
+def download(url,filename):
+    header = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36"}
+    downloadPath = os.getcwd() + '\Temp'
+    if not os.path.exists(downloadPath):
+        os.mkdir(downloadPath)
+    content = requests.get(url,headers=header).text
+    num = 0
+    tempVideo = os.path.join(downloadPath,f'{filename}.ts')
+    fileLine = content.split('\n')
+    for line in fileLine:
+        if line[-4:] == ".jpg":
+            tsUrl = url.rsplit('/',1)[0] + "/" + line
+            # res = requests.get(tsUrl)
+            # with open(downloadPath + "\\" + str(num) + ".ts",'wb') as f:
+            #     f.write(res.content)
+            #     f.flush()
+            print(tsUrl)
+            num += 1
+    print('Download Successful!')
+
+
 
 if __name__ == '__main__':
     while True:
