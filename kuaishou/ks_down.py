@@ -35,12 +35,11 @@ def download(url):
 if __name__ == '__main__':
     start_time = time.time()
     pool = Pool(8)
-    with open('./ks.txt', 'r') as f:
+    with open('./20200320.txt', 'r') as f:
         for line in f:
             line = line.split('?')[0]
             line = line.strip('/\n')
             pool.apply_async(download(line))
-            # print(line)
         pool.close()
         pool.join()
 

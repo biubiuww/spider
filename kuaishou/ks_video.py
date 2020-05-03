@@ -14,7 +14,6 @@ headers = {
 video_path = './video/'
 
 
-
 def get_page(url):
     '''
     :return: response
@@ -63,8 +62,6 @@ def parse_xjj(html):
     video_url = video_src.get('src').split('?', 1)
     url = video_url[0]
     return url
-
-
 
 
 if __name__ == '__main__':
