@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from time import sleep
 
 urls = ['https://www.umei.fun/categories/16?page={}'.format(str(i)) for i in range(1,63)]
-cookie = ''
+cookie = 'your cookies'
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
@@ -27,13 +27,10 @@ def gerUrls(page):
     if page == None:
         print('None!')
     else:
-        # urllist = []
         html = BeautifulSoup(page,'lxml')
         urls = html.select('div.section-white > div > div > div > div > div > div > div > a')
         for url in urls:
             url = 'https://www.umei.fun' + url.get('href')
-        #     urllist.append(url)
-        # return urllist
             imgpage = respon(url)
             getImg(imgpage)
 
@@ -61,8 +58,6 @@ def download(url,title):
         f.write(con.content)
         f.flush()
 
-# t1 = respon('https://www.umei.fun/posts/7308')
-# getImg(t1)
 if __name__ == '__main__':
     for url in urls:
         print(url)
