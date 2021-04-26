@@ -29,7 +29,7 @@ def get_page(url):
 
 class User():
 
-    def __int__(self,uid):
+    def __init__(self,uid):
         self.uid = uid
         #self.baseurl = 'http://91porn.com/uvideos.php?UID='
 
@@ -63,14 +63,15 @@ class User():
                 'm3u8': m3u8_url
             }
             sleep(2)
-            return new_data
+            print(new_data)
+            # return new_data
 
 
 '''
 http://91porn.com/uvideos.php?UID=877aSjDOejaLC0iTIMIi6bhbHa56usJpAZE7gUUrYCButroR&type=public
 '''
-test = User()
-test.uid = 'fe7dCN6lNv5VirM8tSKWVndvRtHMSVyeHRRNQDEbKvUfjKzE'
+test = User('fe7dCN6lNv5VirM8tSKWVndvRtHMSVyeHRRNQDEbKvUfjKzE')
+# test.uid = 'fe7dCN6lNv5VirM8tSKWVndvRtHMSVyeHRRNQDEbKvUfjKzE'
 test.parse_video()
 
 
