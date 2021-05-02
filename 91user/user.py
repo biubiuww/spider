@@ -4,6 +4,7 @@ import urllib.parse as up
 from time import sleep
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
+import sqlite3
 
 ua = UserAgent()
 proxies = {
@@ -42,7 +43,7 @@ def get_page(url):
         return None
 
 
-class User():
+class User:
 
     def __init__(self,uid):
         self.uid = uid
@@ -52,20 +53,19 @@ class User():
     def __page_num(self):
         page = get_page(self.start_url)
         page_num = page.select('ul.nav.navbar-nav.navbar-right > a')[-1].get_text()
-        num = re.findall(r'[0-9]\d',page_num)[0]
+        print(page_num)
+        num = re.findall(r'[0-9]',page_num)[0]
+        print(num)
         flag = int(num) // 8
-        if flag == 0:
+        if flag <= 0:
             flag = 1
             return flag
-        elif flag == 1:
-            return flag
         else:
-            flag += 2
             return flag
 
 
     def __parse_user(self):
-        urls = ['http://91porn.com/uvideos.php?UID={}&page={}'.format(str(self.uid),str(num))for num in range(1,int(self.num))]
+        urls = ['http://91porn.com/uvideos.php?UID={}&page={}'.format(str(self.uid),str(num))for num in range(1,int(self.num+1))]
         # page = get_page(self.start_url)
         for url in urls:
             print(url)
@@ -82,7 +82,7 @@ class User():
                 yield data
 
     def parse_video(self):
-        data_list = []
+        video_data = []
         for user_data in self.__parse_user():
             page = get_page(user_data['url'])
             m3u8 = page.find(text=re.compile('.*"%.*"'))
@@ -94,8 +94,66 @@ class User():
                 'title': user_data['title'],
                 'm3u8': m3u8_url
             }
-            # sleep(1)
-            data_list.append(new_data)
-        # return new_data
-        print(data_list)
+            video_data.append(new_data)
+        # print(video_data)
+        up_users = page.select('span.title-yakov > a > span')[0].get_text()
+        all_data = {'uid':self.uid,'name':up_users,'data':video_data}
+        print(all_data)
+        return all_data
 
+class ClientSqlite:
+
+    def __init__(self, dbName="./91user.db"):
+        self.conn = sqlite3.connect(dbName)
+        self.cur = self.conn.cursor()
+
+    def close_conn(self):
+        self.cur.close()
+        self.conn.close()
+
+    def create_table(self):
+        sql = '''CREATE table users(
+                        id int primary key ,
+                        uid varchar(255) not null ,
+                        name varchar(255) not null ,
+                        data text
+                    )'''
+        try:
+            self.cur.execute(sql)
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print('[ERROR] %s' + e)
+            return False
+
+    def fetchall_table(self,sql,limit_flag=True):
+        try:
+            war_msg = ' The [{}] is empty or equal None!'.format(sql)
+            self.cur.execute(sql)
+            if limit_flag == True:
+                result = self.cur.fetchall()
+                return result if len(result) > 0 else war_msg
+            else:
+                result = self.cur.fetchone()
+                return result if len(result) > 0 else war_msg
+        except Exception as e:
+            print('[SELECT TABLE ERROR]' + e)
+
+    def inset_update_table(self,sql):
+        try:
+            self.cur.execute(sql)
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print('[INSERT/UPDATE TABLE ERROR]' + e)
+            return False
+
+test_uid = [
+    '3637DMj5U2Y7YRyzO9oivHdmcoRn6Cz38oR7yh9jrTonY4AM',
+    '787cUGTgFxeUcKp9wAODVVRi35IDVLjNjygNSkyXcSZfdfmZ'
+]
+if __name__ == '__main__':
+    db = ClientSqlite()
+    for i in test_uid:
+        user = User(i)
+        user.parse_video()
