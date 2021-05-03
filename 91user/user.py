@@ -5,6 +5,7 @@ from time import sleep
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 import sqlite3
+from config.uids import USERS_UID
 
 ua = UserAgent()
 proxies = {
@@ -106,6 +107,7 @@ class ClientSqlite:
     def __init__(self, dbName="./91user.db"):
         self.conn = sqlite3.connect(dbName)
         self.cur = self.conn.cursor()
+        self.create_table()
 
     def close_conn(self):
         self.cur.close()
@@ -113,7 +115,7 @@ class ClientSqlite:
 
     def create_table(self):
         sql = '''CREATE table users(
-                        id int primary key ,
+                        id INTEGER PRIMARY KEY AUTOINCREMENT ,
                         uid varchar(255) not null ,
                         name varchar(255) not null ,
                         data text
@@ -123,7 +125,7 @@ class ClientSqlite:
             self.conn.commit()
             return True
         except Exception as e:
-            print('[ERROR] %s' + e)
+            #print('[ERROR]:%s' %e)
             return False
 
     def fetchall_table(self,sql,limit_flag=True):
@@ -137,23 +139,20 @@ class ClientSqlite:
                 result = self.cur.fetchone()
                 return result if len(result) > 0 else war_msg
         except Exception as e:
-            print('[SELECT TABLE ERROR]' + e)
+            print('[SELECT TABLE ERROR]:%s' %e)
 
-    def inset_update_table(self,sql):
+    def insert_update_table(self,sql):
         try:
             self.cur.execute(sql)
             self.conn.commit()
             return True
         except Exception as e:
-            print('[INSERT/UPDATE TABLE ERROR]' + e)
+            print('[INSERT/UPDATE TABLE ERROR]:%s' %e)
             return False
 
-test_uid = [
-    '3637DMj5U2Y7YRyzO9oivHdmcoRn6Cz38oR7yh9jrTonY4AM',
-    '787cUGTgFxeUcKp9wAODVVRi35IDVLjNjygNSkyXcSZfdfmZ'
-]
-if __name__ == '__main__':
-    db = ClientSqlite()
-    for i in test_uid:
-        user = User(i)
-        user.parse_video()
+#
+# if __name__ == '__main__':
+#     db = ClientSqlite()
+#     for i in USERS_UID:
+#         user = User(i)
+#         user.parse_video()
