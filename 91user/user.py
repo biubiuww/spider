@@ -49,24 +49,31 @@ class User:
     def __init__(self,uid):
         self.uid = uid
         self.start_url = 'http://91porn.com/uvideos.php?UID={}'.format(self.uid)
-        self.num = self.__page_num()
+        self.public_data = self.__page_num()
 
     def __page_num(self):
         page = get_page(self.start_url)
         page_num = page.select('ul.nav.navbar-nav.navbar-right > a')[-1].get_text()
-        print(page_num)
-        num = re.findall(r'[0-9]',page_num)[0]
-        print(num)
-        flag = int(num) // 8
-        if flag <= 0:
-            flag = 1
-            return flag
+        public_video = re.findall(r'\d+',page_num)[0]
+        page_num = int(public_video) // 8
+        if page_num == 0:
+            page_num = 1
+            data = {
+                'page_num':page_num,
+                'public_video':int(public_video)
+            }
+            return data
         else:
-            return flag
-
+            page_num+=1
+            data = {
+                'page_num':page_num,
+                'public_video':int(public_video)
+            }
+            return data
 
     def __parse_user(self):
-        urls = ['http://91porn.com/uvideos.php?UID={}&page={}'.format(str(self.uid),str(num))for num in range(1,int(self.num+1))]
+        end_num = self.public_data['page_num']
+        urls = ['http://91porn.com/uvideos.php?UID={}&page={}'.format(str(self.uid),str(i))for i in range(1,int(end_num+1))]
         # page = get_page(self.start_url)
         for url in urls:
             print(url)
@@ -74,9 +81,9 @@ class User:
             video_urls = page.select('div.well.well-sm > a')
             video_ids = page.select('div.thumb-overlay > img')
             video_names = page.select('span.video-title.title-truncate.m-t-5')
-            for url,id,name in zip(video_urls,video_ids,video_names):
+            for video_url,id,name in zip(video_urls,video_ids,video_names):
                 data = {
-                    'url':url.get('href'),
+                    'url':video_url.get('href'),
                     'id':id.get('src').split('/')[-1].strip('.jpg'),
                     'title':name.get_text()
                 }
@@ -96,7 +103,7 @@ class User:
                 'm3u8': m3u8_url
             }
             video_data.append(new_data)
-        # print(video_data)
+            sleep(random.randint(1,3))
         up_users = page.select('span.title-yakov > a > span')[0].get_text()
         all_data = {'uid':self.uid,'name':up_users,'data':video_data}
         print(all_data)
@@ -116,8 +123,8 @@ class ClientSqlite:
     def create_table(self):
         sql = '''CREATE table users(
                         id INTEGER PRIMARY KEY AUTOINCREMENT ,
-                        uid varchar(255) not null ,
-                        name varchar(255) not null ,
+                        uid varchar(255) NOT NULL ,
+                        name varchar(255) DEFAULT NULL,
                         data text
                     )'''
         try:
@@ -130,16 +137,22 @@ class ClientSqlite:
 
     def fetchall_table(self,sql,limit_flag=True):
         try:
-            war_msg = ' The [{}] is empty or equal None!'.format(sql)
             self.cur.execute(sql)
             if limit_flag == True:
                 result = self.cur.fetchall()
-                return result if len(result) > 0 else war_msg
+                if len(result) > 0:
+                    return result
+                else:
+                    return None
             else:
                 result = self.cur.fetchone()
-                return result if len(result) > 0 else war_msg
+                if len(result) > 0:
+                    return result
+                else:
+                    return None
         except Exception as e:
             print('[SELECT TABLE ERROR]:%s' %e)
+            return None
 
     def insert_update_table(self,sql):
         try:
@@ -150,7 +163,7 @@ class ClientSqlite:
             print('[INSERT/UPDATE TABLE ERROR]:%s' %e)
             return False
 
-#
+
 # if __name__ == '__main__':
 #     db = ClientSqlite()
 #     for i in USERS_UID:
