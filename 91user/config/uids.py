@@ -1,0 +1,4 @@
+USERS_UID = [
+    '3637DMj5U2Y7YRyzO9oivHdmcoRn6Cz38oR7yh9jrTonY4AM',
+    '787cUGTgFxeUcKp9wAODVVRi35IDVLjNjygNSkyXcSZfdfmZ'
+]
