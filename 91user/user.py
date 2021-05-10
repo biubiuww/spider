@@ -5,7 +5,6 @@ from time import sleep
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 import sqlite3
-from config.uids import USERS_UID
 
 ua = UserAgent()
 proxies = {
@@ -162,10 +161,3 @@ class ClientSqlite:
         except Exception as e:
             print('[INSERT/UPDATE TABLE ERROR]:%s' %e)
             return False
-
-
-# if __name__ == '__main__':
-#     db = ClientSqlite()
-#     for i in USERS_UID:
-#         user = User(i)
-#         user.parse_video()
