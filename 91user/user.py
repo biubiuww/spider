@@ -49,9 +49,9 @@ class User:
     def __init__(self,uid):
         self.uid = uid
         self.start_url = 'http://91porn.com/uvideos.php?UID={}'.format(self.uid)
-        self.public_data = self.__page_num()
+        self.public_datas = self.public_data()
 
-    def __page_num(self):
+    def public_data(self):
         page = get_page(self.start_url)
         page_num = page.select('ul.nav.navbar-nav.navbar-right > a')[-1].get_text()
         public_video = re.findall(r'\d+',page_num)[0]
@@ -72,7 +72,7 @@ class User:
             return data
 
     def __parse_user(self):
-        end_num = self.public_data['page_num']
+        end_num = self.public_datas['page_num']
         urls = ['http://91porn.com/uvideos.php?UID={}&page={}'.format(str(self.uid),str(i))for i in range(1,int(end_num+1))]
         # page = get_page(self.start_url)
         for url in urls:
@@ -92,6 +92,7 @@ class User:
     def parse_video(self):
         video_data = []
         for user_data in self.__parse_user():
+            print('当前执行任务：%s' %user_data['url'])
             page = get_page(user_data['url'])
             m3u8 = page.find(text=re.compile('.*"%.*"'))
             temp =  m3u8.split('"')[-2]
@@ -106,7 +107,6 @@ class User:
             sleep(random.randint(1,3))
         up_users = page.select('span.title-yakov > a > span')[0].get_text()
         all_data = {'uid':self.uid,'name':up_users,'data':video_data}
-        print(all_data)
         return all_data
 
 class ClientSqlite:
