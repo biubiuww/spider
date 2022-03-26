@@ -51,11 +51,13 @@
 
 - **kuaishou**: 关键词：快手、无水印、解析、下载
 
-- **yasee1**：年久失修代码，现在的网站已经修改了逻辑
+- ~~**yasee1**：网站倒闭了~~
 
 - **proxy_pool**：代理池源自[jhao104/proxy_pool](https://github.com/jhao104/proxy_pool/)
 
 - **tuao8**: 一个小姐姐的图片下载爬虫
 
 - **91user:** 传入UID解析视频m3u8播放链接
+
+- **cableav.py** 一个神奇的网站。传入列表页，解析M3U8地址并存储在本地 
 
